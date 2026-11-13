@@ -44,6 +44,4 @@ document.getElementById('f').addEventListener('submit', e => {
   e.preventDefault();
   unlock(document.getElementById('pw').value, false);
 });
-const m = location.hash.match(/^#k=(.+)$/);
-if (m) unlock(decodeURIComponent(m[1]), true);
 </script></body></html>
