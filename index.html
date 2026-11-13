@@ -23,14 +23,12 @@ button { font-size: 1rem; padding: 10px 18px; border-radius: 8px; border: 0;
 <p class="err" id="err"></p>
 </div>
 <script>
-document.getElementById('f').addEventListener('submit', async e => {
-  e.preventDefault();
-  const err = document.getElementById('err');
-  err.textContent = 'decrypting\u2026';
+const err = document.getElementById('err');
+async function unlock(pw, quiet) {
+  err.textContent = 'opening\u2026';
   try {
     const buf = new Uint8Array(await (await fetch('payload.bin')).arrayBuffer());
     const salt = buf.slice(0, 16), nonce = buf.slice(16, 28), ct = buf.slice(28);
-    const pw = document.getElementById('pw').value;
     const keyMat = await crypto.subtle.importKey('raw',
       new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
     const key = await crypto.subtle.deriveKey(
@@ -40,6 +38,12 @@ document.getElementById('f').addEventListener('submit', async e => {
       { name: 'AES-GCM', iv: nonce }, key, ct);
     const html = new TextDecoder().decode(pt);
     document.open(); document.write(html); document.close();
-  } catch (ex) { err.textContent = 'wrong password'; }
+  } catch (ex) { err.textContent = quiet ? '' : 'wrong password'; }
+}
+document.getElementById('f').addEventListener('submit', e => {
+  e.preventDefault();
+  unlock(document.getElementById('pw').value, false);
 });
+const m = location.hash.match(/^#k=(.+)$/);
+if (m) unlock(decodeURIComponent(m[1]), true);
 </script></body></html>
